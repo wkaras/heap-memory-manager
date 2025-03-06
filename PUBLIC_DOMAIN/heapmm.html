@@ -1,0 +1,1668 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List href="heapmm_files/filelist.xml">
+<title>Heap Memory Manager</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Subject>Heap Memory Manager</o:Subject>
+  <o:Author>Walt Karas</o:Author>
+  <o:Keywords>Heap Memory Manager Dynamic Allocator C</o:Keywords>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor> </o:LastAuthor>
+  <o:Revision>198</o:Revision>
+  <o:TotalTime>2824</o:TotalTime>
+  <o:Created>2002-08-15T18:23:00Z</o:Created>
+  <o:LastSaved>2003-05-03T16:24:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>2790</o:Words>
+  <o:Characters>15904</o:Characters>
+  <o:Manager>none</o:Manager>
+  <o:Company>self</o:Company>
+  <o:Lines>132</o:Lines>
+  <o:Paragraphs>37</o:Paragraphs>
+  <o:CharactersWithSpaces>18657</o:CharactersWithSpaces>
+  <o:Version>10.3311</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.3in;
+	text-indent:-.3in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	mso-list:l8 level1 lfo2;
+	tab-stops:list .3in;
+	font-size:16.0pt;
+	font-family:Arial;
+	mso-font-kerning:16.0pt;}
+h2
+	{mso-style-link:"Heading 2 Char";
+	mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.4in;
+	text-indent:-.4in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	mso-list:l8 level2 lfo2;
+	tab-stops:list .4in;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h3
+	{mso-style-link:"Heading 3 Char";
+	mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.5in;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	mso-list:l8 level3 lfo2;
+	tab-stops:list .5in;
+	font-size:13.0pt;
+	font-family:Arial;}
+h4
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.6in;
+	text-indent:-.6in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:4;
+	mso-list:l8 level4 lfo2;
+	tab-stops:list .6in;
+	font-size:14.0pt;
+	font-family:"Times New Roman";}
+h5
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.7in;
+	text-indent:-.7in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:5;
+	mso-list:l8 level5 lfo2;
+	tab-stops:list .7in;
+	font-size:13.0pt;
+	font-family:"Times New Roman";
+	font-style:italic;}
+h6
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.8in;
+	text-indent:-.8in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:6;
+	mso-list:l8 level6 lfo2;
+	tab-stops:list .8in;
+	font-size:11.0pt;
+	font-family:"Times New Roman";}
+p.MsoHeading7, li.MsoHeading7, div.MsoHeading7
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.9in;
+	text-indent:-.9in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:7;
+	mso-list:l8 level7 lfo2;
+	tab-stops:list .9in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoHeading8, li.MsoHeading8, div.MsoHeading8
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:1.0in;
+	text-indent:-1.0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:8;
+	mso-list:l8 level8 lfo2;
+	tab-stops:list 1.0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;}
+p.MsoHeading9, li.MsoHeading9, div.MsoHeading9
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:1.1in;
+	text-indent:-1.1in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:9;
+	mso-list:l8 level9 lfo2;
+	tab-stops:list 1.1in;
+	font-size:11.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoList, li.MsoList, div.MsoList
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber, li.MsoListNumber, div.MsoListNumber
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber2, li.MsoListNumber2, div.MsoListNumber2
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue3, li.MsoListContinue3, div.MsoListContinue3
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.75in;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+pre
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-link:"Heading 2";
+	mso-ansi-font-size:14.0pt;
+	mso-bidi-font-size:14.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;
+	mso-bidi-language:AR-SA;
+	font-weight:bold;
+	font-style:italic;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char";
+	mso-style-link:"Heading 3";
+	mso-ansi-font-size:13.0pt;
+	mso-bidi-font-size:13.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;
+	mso-bidi-language:AR-SA;
+	font-weight:bold;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:-129;
+	mso-list-type:simple;
+	mso-list-template-ids:-1979966374;}
+@list l0:level1
+	{mso-level-style-link:"List Number 2";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l1
+	{mso-list-id:-120;
+	mso-list-type:simple;
+	mso-list-template-ids:-535105332;}
+@list l1:level1
+	{mso-level-style-link:"List Number";
+	mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;}
+@list l2
+	{mso-list-id:145324165;
+	mso-list-template-ids:-996391860;}
+@list l2:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-size:10.0pt;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+@list l3
+	{mso-list-id:166678386;
+	mso-list-type:hybrid;
+	mso-list-template-ids:974266788 67698699 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l3:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0D8;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l4
+	{mso-list-id:258415304;
+	mso-list-template-ids:67698719;
+	mso-list-style-name:"1 \/ 1\.1 \/ 1\.1\.1";}
+@list l4:level1
+	{mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;}
+@list l4:level2
+	{mso-level-text:"%1\.%2\.";
+	mso-level-tab-stop:.55in;
+	mso-level-number-position:left;
+	margin-left:.55in;
+	text-indent:-.3in;}
+@list l4:level3
+	{mso-level-text:"%1\.%2\.%3\.";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:.85in;
+	text-indent:-.35in;}
+@list l4:level4
+	{mso-level-text:"%1\.%2\.%3\.%4\.";
+	mso-level-tab-stop:1.25in;
+	mso-level-number-position:left;
+	margin-left:1.2in;
+	text-indent:-.45in;}
+@list l4:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.";
+	mso-level-tab-stop:1.75in;
+	mso-level-number-position:left;
+	margin-left:1.55in;
+	text-indent:-.55in;}
+@list l4:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.";
+	mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	margin-left:1.9in;
+	text-indent:-.65in;}
+@list l4:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.";
+	mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	margin-left:2.25in;
+	text-indent:-.75in;}
+@list l4:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.";
+	mso-level-tab-stop:2.75in;
+	mso-level-number-position:left;
+	margin-left:2.6in;
+	text-indent:-.85in;}
+@list l4:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9\.";
+	mso-level-tab-stop:3.25in;
+	mso-level-number-position:left;
+	margin-left:3.0in;
+	text-indent:-1.0in;}
+@list l5
+	{mso-list-id:453987815;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-307307582 67698691 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l5:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";}
+@list l5:level2
+	{mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level3
+	{mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level4
+	{mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level5
+	{mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level6
+	{mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level7
+	{mso-level-tab-stop:3.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level8
+	{mso-level-tab-stop:4.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l5:level9
+	{mso-level-tab-stop:4.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6
+	{mso-list-id:937521669;
+	mso-list-template-ids:974266788;}
+@list l6:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0D8;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l6:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";}
+@list l6:level3
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l6:level4
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l6:level5
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";}
+@list l6:level6
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l6:level7
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:3.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Symbol;}
+@list l6:level8
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:4.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";}
+@list l6:level9
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0A7;
+	mso-level-tab-stop:4.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:Wingdings;}
+@list l7
+	{mso-list-id:1048650146;
+	mso-list-template-ids:67698719;}
+@list l7:level1
+	{mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;}
+@list l7:level2
+	{mso-level-text:"%1\.%2\.";
+	mso-level-tab-stop:.55in;
+	mso-level-number-position:left;
+	margin-left:.55in;
+	text-indent:-.3in;}
+@list l7:level3
+	{mso-level-text:"%1\.%2\.%3\.";
+	mso-level-tab-stop:.85in;
+	mso-level-number-position:left;
+	margin-left:.85in;
+	text-indent:-.35in;}
+@list l7:level4
+	{mso-level-text:"%1\.%2\.%3\.%4\.";
+	mso-level-tab-stop:1.2in;
+	mso-level-number-position:left;
+	margin-left:1.2in;
+	text-indent:-.45in;}
+@list l7:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.";
+	mso-level-tab-stop:1.55in;
+	mso-level-number-position:left;
+	margin-left:1.55in;
+	text-indent:-.55in;}
+@list l7:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.";
+	mso-level-tab-stop:1.9in;
+	mso-level-number-position:left;
+	margin-left:1.9in;
+	text-indent:-.65in;}
+@list l7:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.";
+	mso-level-tab-stop:2.25in;
+	mso-level-number-position:left;
+	margin-left:2.25in;
+	text-indent:-.75in;}
+@list l7:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.";
+	mso-level-tab-stop:2.6in;
+	mso-level-number-position:left;
+	margin-left:2.6in;
+	text-indent:-.85in;}
+@list l7:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9\.";
+	mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	margin-left:3.0in;
+	text-indent:-1.0in;}
+@list l8
+	{mso-list-id:1561555388;
+	mso-list-template-ids:67698725;}
+@list l8:level1
+	{mso-level-style-link:"Heading 1";
+	mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l8:level2
+	{mso-level-style-link:"Heading 2";
+	mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l8:level3
+	{mso-level-style-link:"Heading 3";
+	mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l8:level4
+	{mso-level-style-link:"Heading 4";
+	mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l8:level5
+	{mso-level-style-link:"Heading 5";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l8:level6
+	{mso-level-style-link:"Heading 6";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l8:level7
+	{mso-level-style-link:"Heading 7";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l8:level8
+	{mso-level-style-link:"Heading 8";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l8:level9
+	{mso-level-style-link:"Heading 9";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+@list l9
+	{mso-list-id:1735815506;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1752718898 67698691 67698691 67698693 67698689 67698691 67698693 67698689 67698691 67698693;}
+@list l9:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	font-family:"Courier New";}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+table.MsoTableGrid
+	{mso-style-name:"Table Grid";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	border:solid windowtext 1.0pt;
+	mso-border-alt:solid windowtext .5pt;
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-border-insideh:.5pt solid windowtext;
+	mso-border-insidev:.5pt solid windowtext;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]--><!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext="edit" spidmax="62466">
+  <o:colormenu v:ext="edit" fillcolor="white"/>
+ </o:shapedefaults></xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body bgcolor=white lang=EN-US link=blue vlink=purple style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<p class=MsoNormal align=center style='text-align:center'><b style='mso-bidi-font-weight:
+normal'><span style='font-size:20.0pt'>Heap Memory Manager<o:p></o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal align=center style='text-align:center'>Version 1.1</p>
+
+<p class=MsoNormal align=center style='text-align:center'>Author:<span
+style='mso-spacerun:yes'>  </span><a href="http://www.geocities.com/wkaras/">Walt
+Karas</a></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>1<span style='mso-spacerun:yes'>  </span>Introduction</span></h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This document describes a portable heap memory manager, also
+known as a dynamic memory allocator.<span style='mso-spacerun:yes'>  </span>The
+manager consists of several functions implemented in ANSI C.<span
+style='mso-spacerun:yes'>  </span>These functions have worst-case time
+complexity of <span class=GramE>O(</span>log N), where N is the number of
+distinct free memory block sizes.<span style='mso-spacerun:yes'> 
+</span>Allocation is done on a strict best-fit basis.<span
+style='mso-spacerun:yes'>  </span>Adjacent free memory blocks are always
+coalesced into a single, larger free block.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This document, as well as the source code it describes, is
+in the public domain.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The heap facility provided by this manager is similar to the
+heap facility provided by the <span style='font-family:"Courier New"'>malloc</span>
+and <span style='font-family:"Courier New"'>free</span> functions in the C
+standard library.<span style='mso-spacerun:yes'>  </span>A successful
+allocation returns a contiguous range of bytes in memory of at least the
+requested size.<span style='mso-spacerun:yes'>  </span>Allocated memory has to
+be explicitly freed/<span class=SpellE>deallocated</span> (no garbage
+collection)<span class=GramE>.</span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The manager code (optionally) performs limited
+self-consistency checks in order to detect heap corruption.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This manager could be used to implement the <span
+style='font-family:"Courier New"'>malloc</span>/<span style='font-family:"Courier New"'>free</span>
+functions in the C standard library.<span style='mso-spacerun:yes'>  </span>It
+could also be used to implement a heap memory manager for shared memory, which
+in turn could be used to implement allocators of shared memory for C++ Standard
+Template Library containers.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>2<span style='mso-spacerun:yes'>  </span>Source</span> Files</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The files containing the source code for the manager are:</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+ mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-bottom:double windowtext 1.5pt;mso-border-alt:solid windowtext .5pt;
+  mso-border-bottom-alt:double windowtext 1.5pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'>File<o:p></o:p></b></p>
+  </td>
+  <td valign=top style='border-top:solid windowtext 1.0pt;border-left:none;
+  border-bottom:double windowtext 1.5pt;border-right:solid windowtext 1.0pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  mso-border-bottom-alt:double windowtext 1.5pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'>Contents<o:p></o:p></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:double windowtext 1.5pt;mso-border-alt:
+  solid windowtext .5pt;mso-border-top-alt:double windowtext 1.5pt;padding:
+  0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>heapmm.h</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:double windowtext 1.5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  mso-border-top-alt:double windowtext 1.5pt;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The header file that defines the interface to the heap
+  memory manager.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_cnfg.h</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The <span class=GramE>header file</span> containing
+  definitions that may have to be changed for a particular port of the heap
+  manager.<span style='mso-spacerun:yes'>  </span>Included by <span
+  class=SpellE>heapmm.h</span>.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_intrnl.h</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The internal <span class=GramE>header file</span> for the
+  manager. <span style='mso-spacerun:yes'> </span>Files external to the manager
+  should not include this file.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_base.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation file for basic functions that are
+  always needed when using the heap manager.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_alloc.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_alloc</span></span> function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_grow.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_grow_chunk</span></span> function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_true.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_true_size</span></span> function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_largest.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_largest_available</span></span>
+  function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_resize.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_resize</span></span> function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_shrink.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the <span class=SpellE><span
+  style='font-family:"Courier New"'>hmm_shrink_chunk</span></span> function.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>hmm_dflt_abort.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>The implementation of the function that aborts execution
+  if the manager’s (optional) self-auditing finds corruption of the heap.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:12'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>test_hmm.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Test suite for the manager.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:13'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>test_hmm.h</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=GramE>Header file</span> for test suite
+  (only).</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:14;mso-yfti-lastrow:yes'>
+  <td width=121 valign=top style='width:91.05pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>speed_hmm.c</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Program that (very crudely) measures the speed of manager
+  functions versus the <span style='font-family:"Courier New"'>malloc</span>
+  and <span style='font-family:"Courier New"'>free</span> functions of the
+  standard library.</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>These files, along with this document (heapmm.html) are in
+the zip archive <a href="heapmm.zip"><span class=SpellE>heapmm.zip</span></a>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The source code for the manager includes the header files <span
+class=SpellE>cavl_if.h</span> and <span class=SpellE>cavl_impl.h</span> from
+the <a href="http://www.geocities.com/wkaras/gen_c/cavl_tree.html">C AVL Tree
+Generic Package</a> (version 1.4 or later).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>3<span style='mso-spacerun:yes'>  </span>Assumptions</span> and
+Definitions</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The first assumption is that <span class=GramE><span
+style='font-family:"Courier New"'>sizeof(</span></span><span style='font-family:
+"Courier New"'>char)</span> is <span style='font-family:"Courier New"'>1</span>.<span
+style='mso-spacerun:yes'>  </span>This is required by the ISO C++
+standard.<span style='mso-spacerun:yes'>  </span>I’m not sure it’s required by
+ANSI C, but I’ve never seen a C implementation where this wasn’t the case.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>If a pointer p of type <span style='font-family:"Courier New"'>char
+*</span> contains an address such that (<span style='font-family:"Courier New"'>*
+(T *) p)</span> is a valid lvalue for any type T, then p contains an <i
+style='mso-bidi-font-style:normal'>aligned address</i>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The <i style='mso-bidi-font-style:normal'>address align unit
+(AAU)</i> is some positive number of bytes N such that, if p, a pointer of type
+<span style='font-family:"Courier New"'>char *</span>, contains an aligned
+address, then the expressions <span style='font-family:"Courier New"'>p + N</span>
+and <span style='font-family:"Courier New"'>p – N</span> also evaluate to
+aligned addresses.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>In order for the manager to be ported to <span class=GramE>a
+processor</span> architecture, a valid address align unit for the processor
+must exist.<span style='mso-spacerun:yes'>  </span>The smaller the AAU, the
+fewer wasted “pad” bytes will be necessary.<span style='mso-spacerun:yes'> 
+</span>Generally, to avoid skewed memory reads and writes, you should use the
+width in bytes of your processor’s data bus as the AAU.<span
+style='mso-spacerun:yes'>  </span>For that reason, the default AAU is <span
+class=GramE><span style='font-family:"Courier New"'>sizeof(</span></span><span
+class=SpellE><span style='font-family:"Courier New"'>int</span></span><span
+style='font-family:"Courier New"'>)</span>.<span style='mso-spacerun:yes'> 
+</span>The preprocessor symbol <span style='font-family:"Courier New"'>HMM_ADDR_ALIGN_UNIT</span>,
+defined in <span class=SpellE>hmm_cnfg.h</span>, translates to the address align
+unit.<span style='mso-spacerun:yes'>  </span>If eliminating pad bytes concerns
+you more than avoid skewed memory operations, you can make the AAU even
+smaller.<span style='mso-spacerun:yes'>  </span>An AAU of 1 can be used for the
+Intel x86, VAX and other architectures which do not generate bus errors.<span
+style='mso-spacerun:yes'>  </span>An AAU of 2 can be used for the Motorola
+68000 and the PDP-11 architectures.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>A <i style='mso-bidi-font-style:normal'>chunk</i> of memory
+is a large contiguous range of addresses, which the manager subdivides to
+satisfy allocation requests.<span style='mso-spacerun:yes'>  </span>The
+subdivided pieces of a chunk are called <i style='mso-bidi-font-style:normal'>blocks</i>.<span
+style='mso-spacerun:yes'>  </span>The first byte of a chunk must be at an
+aligned address.<span style='mso-spacerun:yes'>  </span>The number of bytes in
+a block or chunk must be <span class=GramE>a whole number of <i
+style='mso-bidi-font-style:normal'>block align</i></span><i style='mso-bidi-font-style:
+normal'> units (BAUs)</i>.<span style='mso-spacerun:yes'>  </span>A block align
+unit is a whole number of <span class=SpellE>AAUs</span>.<span
+style='mso-spacerun:yes'>  </span>The preprocessor symbol <span
+style='font-family:"Courier New"'>HMM_BLOCK_ALIGN_UNIT</span>, defined in <span
+class=SpellE>hmm_cnfg.h</span>, translates to the block align unit.<span
+style='mso-spacerun:yes'>  </span>The default BAU is simply one AAU.<span
+style='mso-spacerun:yes'>  </span>Using a larger BAU causes the sizes of blocks
+to be rounded up with pad <span class=SpellE>AAUs</span>, thus wasting some
+space.<span style='mso-spacerun:yes'>  </span>The advantage is that the number
+of distinct block sizes is reduced.<span style='mso-spacerun:yes'>  </span>The
+time it takes to allocate and free memory increases as the number of distinct
+block sizes increases.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The implementation depends on the assumption that <span
+class=GramE><span style='font-family:"Courier New"'>sizeof(</span></span><span
+style='font-family:"Courier New"'>T *) == sizeof(void *)</span> for any type <span
+style='font-family:"Courier New"'>T</span>.<span style='mso-spacerun:yes'> 
+</span>It also assumes that, if <span style='font-family:"Courier New"'>p</span>
+is a pointer variable of type <span style='font-family:"Courier New"'>void *</span>,
+and p is null, <span class=GramE>then<span style='mso-spacerun:yes'>  </span><span
+style='font-family:"Courier New"'>*</span></span><span style='font-family:"Courier New"'>
+(T **) &amp;p == (T *) 0</span><span style='mso-spacerun:yes'>  </span>for any
+type <span style='font-family:"Courier New"'>T</span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4<span style='mso-spacerun:yes'>  </span>Interface</span></h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The prototypes for these functions and the typedefs are
+provided by <span class=SpellE>heapmm.h</span>.</p>
+
+<p class=MsoNormal><span style='mso-spacerun:yes'> </span></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.1<span style='mso-spacerun:yes'>  </span>Typedef</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_size_aau</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>An unsigned integral type with enough
+precision to hold the size of a block in <span class=SpellE>AAUs</span>.</span><span
+style='mso-spacerun:yes'>  </span><span class=GramE><span style='font-family:
+"Courier New"'>unsigned</span></span><span style='font-family:"Courier New"'>
+long</span> by default.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.2<span style='mso-spacerun:yes'>  </span>Typedef</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_size_bau</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>An unsigned integral type with enough
+precision to hold the size of a block or chunk in BAUs.</span><span
+style='mso-spacerun:yes'>  </span><span class=GramE><span style='font-family:
+"Courier New"'>unsigned</span></span><span style='font-family:"Courier New"'>
+long</span> by default.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Let N be the number of bits of precision in <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_size_bau</span></span>.<span
+style='mso-spacerun:yes'>  </span>Due to details of the implementation, the
+maximum chunk size is the largest unsigned number of precision N – 1.<span
+style='mso-spacerun:yes'>  </span>For example, if <span class=SpellE><span
+style='font-family:"Courier New"'>hmm_size_bau</span></span> is a 32-bit
+unsigned integer, the maximum chunk size is 2<sup>31</sup> – 1. If you attempt
+to add or grow a chunk in excess of the maximum size, the results are
+undefined.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.3<span style='mso-spacerun:yes'>  </span>Typedef</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_descriptor</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>The descriptor for a heap that is managed
+by this manager.</span><span style='mso-spacerun:yes'>  </span>The <span
+class=GramE>fields</span> <span class=SpellE><span style='font-family:"Courier New"'>num_baus_can_shrink</span></span>
+and <span class=SpellE><span style='font-family:"Courier New"'>end_of_shrinkable_chunk</span></span>
+should be treated as read-only by the user code.<span
+style='mso-spacerun:yes'>  </span>See the descriptions of the <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_free</span></span> and
+<span class=SpellE><span style='font-family:"Courier New"'>hmm_shrink_chunk</span></span>
+functions for the usage of these two fields.<span style='mso-spacerun:yes'> 
+</span>The other fields of this structure should be treated as private (neither
+readable nor <span class=SpellE>writable</span>) by the user code.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.4<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_init</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_init</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>Initializes the descriptor to an empty
+state.</span><span style='mso-spacerun:yes'>  </span>A descriptor must be
+initialized before passing it to any other function.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.5<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_new_chunk</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_new_chunk</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>, void *<span
+class=SpellE>first_byte_of_chunk</span>, <span class=SpellE>hmm_size_bau</span>
+<span class=SpellE>num_block_align_units_in_chunk</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>Assigns a chunk to the heap with the given
+descriptor.</span><span style='mso-spacerun:yes'>  </span>The chunk can then be
+subdivided to satisfy allocation requests.<span style='mso-spacerun:yes'> 
+</span>A chunk can only be assigned to a single heap, but a heap can have
+multiple chunks assigned to it.<span style='mso-spacerun:yes'>  </span>The
+first byte of the chunk has to be at an aligned address.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Assigning very small chunks to a heap will result in
+corruption.<span style='mso-spacerun:yes'>  </span>(“Very small” means smaller
+than <span style='font-family:"Courier New"'>MIN_BLOCK_BAUS +
+DUMMY_END_BLOCK_BAUS</span>.<span style='mso-spacerun:yes'>  </span>These
+values are defined in <span class=SpellE>hmm_intrnl.h</span>.)</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.6<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_alloc</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> * <span class=SpellE>hmm_alloc</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>, <span
+class=SpellE>hmm_size_aau</span> <span class=SpellE>num_addr_align_units</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Allocate a contiguous range of <span class=SpellE>AAUs</span>
+of size <span class=SpellE><span style='font-family:"Courier New"'>num_addr_align_units</span></span>
+from a heap.<span style='mso-spacerun:yes'>  </span>A pointer to the first byte
+of the allocated memory is returned if the function is successful.<span
+style='mso-spacerun:yes'>  </span>A null pointer is returned if the function
+fails.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.7<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_free</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_free</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>, void *<span
+class=SpellE>mem</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Frees (deallocates) memory previously allocated from the
+given heap.<span style='mso-spacerun:yes'>  </span>The <span class=SpellE><span
+style='font-family:"Courier New"'>mem</span></span> parameter has to be same
+value returned by the <span class=SpellE><span style='font-family:"Courier New"'>hmm_alloc</span></span>
+function.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>If, after the free operation, it would be possible to shrink
+the size of a chunk, the descriptor field <span class=SpellE><span
+style='font-family:"Courier New"'>num_baus_can_shrink</span></span> will be set
+to the maximum number of block align units the chunk could be shrunk by.<span
+style='mso-spacerun:yes'>  </span>If it is not possible to shrink any chunk as
+a result of the free operation, <span class=SpellE><span style='font-family:
+"Courier New"'>num_baus_can_shrink</span></span> will be set to zero.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>If <span class=SpellE><span style='font-family:"Courier New"'>num_baus_can_shrink</span></span>
+is set to a non-zero value, the (void) pointer field <span class=SpellE><span
+style='font-family:"Courier New"'>end_of_shrinkable_chunk</span></span> (also
+in the descriptor) will point to one byte after the last byte in the chunk that
+can be shrunk.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.8<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_grow_chunk</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_grow_chunk</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>, void *<span
+class=SpellE>end_of_chunk</span>, <span class=SpellE>hmm_size_bau</span> <span
+class=SpellE>num_block_align_units_to_add</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>Adds space to a chunk at the end.</span><span
+style='mso-spacerun:yes'>  </span>The chunk must already have been assigned to
+the heap whose descriptor is given.<span style='mso-spacerun:yes'>  </span><span
+class=SpellE><span class=GramE><span style='font-family:"Courier New"'>end_of_chunk</span></span></span>
+should point to the first byte after the last byte in the chunk (prior to
+growing). </p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Growing a chunk by a very small amount may result in
+corruption.<span style='mso-spacerun:yes'>  </span>(“Very small” means smaller
+than <span style='font-family:"Courier New"'>MIN_BLOCK_BAUS</span>.<span
+style='mso-spacerun:yes'>  </span>This value is defined in <span class=SpellE>hmm_intrnl.h</span>.)</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This function is redundant, in the sense that you could add
+the additional heap space as a new chunk, rather than growing an existing
+chunk.<span style='mso-spacerun:yes'>  </span>The reason to grow the existing
+chunk instead is that the manager is not smart enough to coalesce adjacent free
+blocks in different chunks, even when the chunks are adjacent.<span
+style='mso-spacerun:yes'>  </span>There is also a small amount of per-chunk
+overhead.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.9<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_true_size</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span style='font-family:"Courier New"'>hmm_size_aau</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_true_<span
+class=GramE>size</span></span><span class=GramE>(</span>void *<span
+class=SpellE>mem</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Sometimes, when you allocate some memory, you will actually
+get a few more <span class=SpellE>AAUs</span> than you requested.<span
+style='mso-spacerun:yes'>  </span>This function returns the number of <span
+class=SpellE>AAUs</span> that are actually usable in a currently allocated
+block.<span style='mso-spacerun:yes'>  </span><span class=SpellE><span
+class=GramE><span style='font-family:"Courier New"'>mem</span></span></span>
+has to be pointer value that was returned by <span class=SpellE><span
+style='font-family:"Courier New"'>hmm_alloc</span></span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.10<span style='mso-spacerun:yes'>  </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_largest_available</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span style='font-family:"Courier New"'>hmm_size_aau</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_largest_<span
+class=GramE>available</span></span><span class=GramE>(</span><span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:"Courier New"'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoNormal><span class=GramE>Returns the largest number of <span
+class=SpellE>AAUs</span> that could successfully be allocated (by a single call
+to <span class=SpellE><span style='font-family:"Courier New"'>hmm_alloc</span></span>)
+from the heap with the given descriptor.</span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.11 <span style='mso-spacerun:yes'> </span>Function</span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_shrink_chunk</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE><span style='font-family:"Courier New"'>void</span></span><span
+style='font-family:"Courier New"'> <span class=SpellE>hmm_shrink_chunk</span>(<span
+class=SpellE>hmm_descriptor</span> *<span class=SpellE>desc</span>, <span
+class=SpellE>hmm_size_bau</span> <span class=SpellE>num_block_align_units_to_shrink</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>Shrinks a chunk.</span><span
+style='mso-spacerun:yes'>  </span>(The starting location of the chunk does not
+change, only the ending location.)<span style='mso-spacerun:yes'>  </span>This
+function should only be called immediately after a call to <span class=SpellE><span
+style='font-family:"Courier New"'>hmm_free</span></span> that set the <span
+class=SpellE><span style='font-family:"Courier New"'>num_baus_can_shrink</span></span>
+descriptor field to a non-zero value.<span style='mso-spacerun:yes'>  </span>No
+other manager functions should be called between the calls to <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_free</span></span> and
+<span class=SpellE><span style='font-family:"Courier New"'>hmm_shrink_chunk</span></span>.<span
+style='mso-spacerun:yes'>  </span>The value passed for <span class=SpellE><span
+style='font-family:"Courier New"'>num_block_align_units_to_shrink</span></span>
+has to be less than or equal to <span class=SpellE><span style='font-family:
+"Courier New"'>num_baus_can_shrink</span></span>.<span
+style='mso-spacerun:yes'>  </span>The (void) pointer <span class=SpellE><span
+style='font-family:"Courier New"'>end_of_shrinkable_chunk</span></span> in the
+descriptor, as set by <span class=SpellE><span style='font-family:"Courier New"'>hmm_free</span></span>,
+points to the first byte past the last byte in the chunk that will be shrunk.<span
+style='mso-spacerun:yes'>  </span>(User code must not change the value of <span
+class=SpellE><span style='font-family:"Courier New"'>end_of_shrinkable_chunk</span></span>.)</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>If the descriptor field <span class=SpellE><span
+style='font-family:"Courier New"'>num_baus_can_shrink</span></span> contains
+the number <span class=GramE>of<span style='mso-spacerun:yes'>  </span>BAUs</span>
+in the chunk, the chunk can be made to “disappear” by this function.<span
+style='mso-spacerun:yes'>  </span>But, if an attempt is made to shrink the
+chunk to a very small size, corruption will result.<span
+style='mso-spacerun:yes'>  </span>(“Very small” is smaller than <span
+style='font-family:"Courier New"'>MIN_BLOCK_BAUS + DUMMY_END_BLOCK_BAUS</span>.<span
+style='mso-spacerun:yes'>  </span>These values are defined in <span
+class=SpellE>hmm_intrnl.h</span>.)</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>4.12 <span style='mso-spacerun:yes'> </span>Function</span> <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_resize</span></span></h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><span style='font-family:
+"Courier New"'>int</span></span></span><span style='font-family:"Courier New"'>
+<span class=SpellE>hmm_resize</span>(<span class=SpellE>hmm_descriptor</span> *<span
+class=SpellE>desc</span>, void *<span class=SpellE>mem</span>, <span
+class=SpellE>hmm_size_aau</span> <span class=SpellE>new_num_addr_align_units</span>);<o:p></o:p></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>Attempts to change the size of a previously-allocated
+block.</span><span style='mso-spacerun:yes'>  </span><span class=SpellE><span
+class=GramE><span style='font-family:"Courier New"'>mem</span></span></span>
+must be pointer that was returned by <span class=SpellE><span style='font-family:
+"Courier New"'>hmm_alloc</span></span>.<span style='mso-spacerun:yes'>  </span><span
+class=GramE>The function returns 0 if it was able to resize the block to the
+desired size.</span><span style='mso-spacerun:yes'>  </span>Otherwise, the
+function returns -1.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Note that this function will not move the block the way the
+C Standard Library function <span class=SpellE><span style='font-family:"Courier New"'>realloc</span></span>
+will.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>5<span style='mso-spacerun:yes'>  </span>Overview</span> of
+Implementation</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Each block in a chunk starts on an aligned address, and
+consists of a whole number of block align units.<span
+style='mso-spacerun:yes'>  </span>At the beginning of each block is the block <i
+style='mso-bidi-font-style:normal'>head</i>.<span style='mso-spacerun:yes'> 
+</span>The block head consists of the following structure:</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<pre><span class=GramE><span style='font-size:12.0pt'>typedef</span></span><span
+style='font-size:12.0pt'> struct <span class=SpellE>head_struct</span><o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>  </span>{<o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>    </span><span
+class=SpellE>hmm_size_bau</span> <span class=SpellE>previous_block_size</span>, <span
+class=SpellE>block_size</span>;<o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>  </span>}<o:p></o:p></span></pre><pre><span
+class=SpellE><span style='font-size:12.0pt'>head_record</span></span><span
+style='font-size:12.0pt'>;<o:p></o:p></span></pre>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE><span style='font-family:
+"Courier New"'>hmm_size_bau</span></span></span> is the (configurable) unsigned
+type for holding sizes of blocks and chunks.<span style='mso-spacerun:yes'> 
+</span>The most significant bit of <span class=SpellE><span style='font-family:
+"Courier New"'>previous_block_size</span></span> and the most significant bit
+of <span class=SpellE><span style='font-family:"Courier New"'>block_size</span></span>
+are combined together to form a <i style='mso-bidi-font-style:normal'>block
+status field</i>.<span style='mso-spacerun:yes'>  </span>If both bits in the
+block status field are zero, this indicates that the block has been allocated
+(by a call to <span class=SpellE><span style='font-family:"Courier New"'>hmm_alloc</span></span>).<span
+style='mso-spacerun:yes'>  </span>Any of the other 3 possible combinations of
+values of the bits in the block status field indicate that the block is free.<span
+style='mso-spacerun:yes'>  </span>The remaining bits is <span class=SpellE><span
+style='font-family:"Courier New"'>block_size</span></span> contain the number
+of block align units in the block.<span style='mso-spacerun:yes'>  </span>The
+remaining bits in <span class=SpellE><span style='font-family:"Courier New"'>previous_block_size</span></span>
+contain the block size of the preceding block, or zero if the block is the
+first block in a chunk.<span style='mso-spacerun:yes'>  </span>The size of the
+block head is the minimum <span class=GramE>number of address align</span>
+units required to hold a <span class=SpellE><span style='font-family:"Courier New"'>head_record</span></span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Each chunk ends with a <i style='mso-bidi-font-style:normal'>dummy
+end block</i>.<span style='mso-spacerun:yes'>  </span>In the dummy end block,
+both bits in the block status field are zero (although it cannot be
+allocated).<span style='mso-spacerun:yes'>  </span><span class=SpellE><span
+class=GramE><span style='font-family:"Courier New"'>block_size</span></span></span>
+contains zero, and <span class=SpellE><span style='font-family:"Courier New"'>previous_block_size</span></span>
+contains the size of the last (non-dummy) block in the chunk.<span
+style='mso-spacerun:yes'>  </span>The size of a dummy end block is the minimum
+number of block align units need to hold a <span class=SpellE><span
+style='font-family:"Courier New"'>head_record</span></span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The remainder of a (non-dummy) block after the head is the
+block <i style='mso-bidi-font-style:normal'>payload</i>.<span
+style='mso-spacerun:yes'>  </span>In an allocated block, the payload contains
+user data.<span style='mso-spacerun:yes'>  </span>When you call <span
+class=SpellE><span style='font-family:"Courier New"'>hmm_alloc</span></span>,
+the pointer returned is a pointer to the first byte of the payload of the block
+that was allocated for you.<span style='mso-spacerun:yes'>  </span>In a free
+block, the payload contains a <i style='mso-bidi-font-style:normal'>pointer
+record</i>.<span style='mso-spacerun:yes'>  </span>A pointer record has this
+structure:</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<pre><span class=GramE><span style='font-size:12.0pt'>typedef</span></span><span
+style='font-size:12.0pt'> struct <span class=SpellE>ptr_struct</span><o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>  </span>{<o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>    </span><span
+class=GramE>struct</span> <span class=SpellE>ptr_struct</span> *self, *<span
+class=SpellE>prev</span>, *next;<o:p></o:p></span></pre><pre><span
+style='font-size:12.0pt'><span style='mso-spacerun:yes'>  </span>}<o:p></o:p></span></pre><pre><span
+class=SpellE><span style='font-size:12.0pt'>ptr_record</span></span><span
+style='font-size:12.0pt'>;<o:p></o:p></span></pre>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Free blocks are held in a data structure called the <i
+style='mso-bidi-font-style:normal'>free collection</i>.<span
+style='mso-spacerun:yes'>  </span>The pointers in the pointer record are used to
+link a free block into the free collection.<span style='mso-spacerun:yes'> 
+</span>Each free block is located in a <i style='mso-bidi-font-style:normal'>bin</i>
+along with all other free blocks of exactly the same size.<span
+style='mso-spacerun:yes'>  </span>The first block in each bin is a node in an
+AVL tree keyed by block size.<span style='mso-spacerun:yes'>  </span>The <span
+style='font-family:"Courier New"'>self</span> and <span class=SpellE><span
+style='font-family:"Courier New"'>prev</span></span> pointers in the block’s
+pointer record are the node’s child pointers.<span style='mso-spacerun:yes'> 
+</span>The node’s balance factor (-1, 0 or 1) is encoded using the 3 possible
+bit value combinations for a free block in the block status field.<span
+style='mso-spacerun:yes'>  </span>The <span style='font-family:"Courier New"'>next</span>
+pointer points to the pointer record of the next block in the bin (or is null
+if there is only one block in the bin).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>For blocks in a bin after the first, <span class=SpellE><span
+style='font-family:"Courier New"'>prev</span></span> and <span
+style='font-family:"Courier New"'>next</span> point to the previous and the
+next block in the bin (making the bin a doubly-linked list).<span
+style='mso-spacerun:yes'>  </span><span class=GramE><span style='font-family:
+"Courier New"'>self</span></span> points to the pointer record it is inside of.<span
+style='mso-spacerun:yes'>  </span>(This will make sense in a minute.)<span
+style='mso-spacerun:yes'>  </span>The block status field contains any of the 3
+possible “free” values (doesn’t matter which).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>When allocating a block, you search the AVL tree for the
+smallest block whose payload is the same size or greater than the size
+requested.<span style='mso-spacerun:yes'>  </span>If there are other blocks in
+the bin of the block you find, you grab the second block in the bin.<span
+style='mso-spacerun:yes'>  </span>This avoids a (relatively) time-consuming
+change to the AVL tree structure.<span style='mso-spacerun:yes'>  </span>But if
+there is only one block in the bin, you have to delete it from the AVL
+tree.<span style='mso-spacerun:yes'>  </span>If the “extra” space in the block
+is big enough, you split the extra space off as a new block.<span
+style='mso-spacerun:yes'>  </span>You then put this new block into the free
+collection.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>When freeing a block, you check to see if the adjacent
+blocks are free.<span style='mso-spacerun:yes'>  </span>(Since the previous
+block’s size is in the head of the block you’re freeing, it’s easy to locate
+the previous block’s head.)<span style='mso-spacerun:yes'>  </span>If (one or
+both) adjacent blocks are free, you coalesce them into a single free block.<span
+style='mso-spacerun:yes'>  </span>Before coalescing an adjacent block, you have
+to take it out of the free collection. You look at the <span style='font-family:
+"Courier New"'>self</span> pointer in the pointer record of the adjacent
+block.<span style='mso-spacerun:yes'>  </span>If the <span style='font-family:
+"Courier New"'>self</span> pointer is actually pointing to itself, the adjacent
+block can’t be the first block in a bin, because a node in an AVL tree cannot
+be its own child.<span style='mso-spacerun:yes'>  </span>In this case, taking
+the adjacent block out of the free collection is simply a matter of deleting it
+from the doubly-linked list for the bin.<span style='mso-spacerun:yes'> 
+</span>If you’re not lucky, and the adjacent block is an AVL tree node, it’s
+better to substitute another block from the bin into the adjacent block’s
+position in the tree.<span style='mso-spacerun:yes'>  </span>(Deleting a node
+from an AVL tree can result in a lot of complex rebalancing.)<span
+style='mso-spacerun:yes'>  </span>But if the adjacent free block is alone in
+its bin, deleting it from the AVL tree is unavoidable.<span
+style='mso-spacerun:yes'>  </span>After any coalescing is complete, you insert
+the newly-freed block into the free collection.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>It’s a common pattern in programs that a bunch of blocks are
+allocated at about the same time, <span class=GramE>then</span> freed later at
+about the same time.<span style='mso-spacerun:yes'>  </span>A group of
+successive allocations are often satisfied by subdividing a single large block,
+causing the allocated blocks to be located adjacently in the order of
+allocation.<span style='mso-spacerun:yes'>  </span>If these blocks are freed
+together, they coalesce back into the original big block.<span
+style='mso-spacerun:yes'>  </span>To optimize for this case, when a block is
+freed by a call to <span class=SpellE><span style='font-family:"Courier New"'>hmm_free</span></span>,
+the block is not immediately put into the free collection.<span
+style='mso-spacerun:yes'>  </span>This give the block a chance to coalesce with
+succeeding blocks that are freed before taking the time to do an insertion into
+the free collection.<span style='mso-spacerun:yes'>  </span>(There is a pointer
+in the heap descriptor to keep track of the last freed block.)</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>I chose to implement this in C rather than C++ because of
+the widespread (but unjustified) resistance to using C++ in low-level
+programming.<span style='mso-spacerun:yes'>  </span>There are a few macros in
+the code that translate to expressions with multiple occurrences of macro
+parameters.<span style='mso-spacerun:yes'>  </span>I tried to not pass
+expressions as parameters to these macros, but it wasn’t always easy to avoid
+it.<span style='mso-spacerun:yes'>  </span>So, if you’re using C++, and your
+faith in your compiler’s repeated subexpression detection is weak, you might
+want to convert these macros to inline functions.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>6<span style='mso-spacerun:yes'>  </span>Other</span> Heap Memory
+Managers</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This manager was designed to have reasonable performance
+regardless of the pattern of allocations and frees, and to be easily portable
+to arbitrary environments.<span style='mso-spacerun:yes'>  </span><a
+href="http://g.oswego.edu/dl/html/malloc.html">Doug Lea's memory allocator</a>
+might be a better choice if you are more interested in average-case performance
+where the typical allocation size is relatively small.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Links to other heap managers can be found <a
+href="http://www.cs.colorado.edu/homes/zorn/public_html/Malloc.html">here</a>.<span
+style='mso-spacerun:yes'>  </span>You may also want to read <a
+href="http://www.cs.utexas.edu/users/wilson/papers/fragsolved.pdf">an
+interesting (PDF) paper</a> that compares the performance of different heap
+managers.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>In an ideal world, developers of heap-intensive and
+performance-sensitive applications would have multiple heap managers available
+to them.<span style='mso-spacerun:yes'>  </span>This would allow the selection
+of the best heap manager for an application based on comparative performance
+testing.<span style='mso-spacerun:yes'>  </span>Having a variety of heap
+managers that are packaged so they are operating-system-independent would be
+helpful in reaching this goal.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in;mso-list:none;tab-stops:.5in'><span
+class=GramE>7<span style='mso-spacerun:yes'>  </span>Version</span> History</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
+style='font-size:14.0pt'>Version 1.0<o:p></o:p></span></b></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<ul style='margin-top:0in' type=circle>
+ <li class=MsoNormal style='mso-list:l9 level1 lfo12;tab-stops:list .5in'>Initial
+     version. </li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
+style='font-size:14.0pt'>Version 1.1<o:p></o:p></span></b></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<ul style='margin-top:0in' type=circle>
+ <li class=MsoNormal style='mso-list:l5 level1 lfo7;tab-stops:list .5in'>Added <span
+     class=SpellE><span style='font-family:"Courier New"'>hmm_shrink_chunk</span></span>
+     and <span class=SpellE><span style='font-family:"Courier New"'>hmm_resize</span></span>
+     functions.</li>
+</ul>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
