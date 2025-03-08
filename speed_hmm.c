@@ -282,8 +282,7 @@ int main(void)
     /* Whoever has the most repetitions in 10 seconds is fastest. */
     printf("std reps: %u\n", std_rep);
     printf("hmm reps: %u\n", hmm_rep);
-    printf("average alloc bytes: %u\n",
-      (MIN + (((COUNT - 1) * STEP) / 2)) * HMM_ADDR_ALIGN_UNIT);
+    printf("average alloc bytes: %u\n", (unsigned) ((MIN + (((COUNT - 1) * STEP) / 2)) * HMM_ADDR_ALIGN_UNIT));
 
     return(0);
   }

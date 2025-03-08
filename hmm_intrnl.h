@@ -23,6 +23,7 @@
 
 #include "heapmm.h"
 
+#undef U
 #define U(BASE) HMM_UNIQUE(BASE)
 
 /* Mask of high bit of variable of size_bau type. */

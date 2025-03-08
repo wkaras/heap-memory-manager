@@ -19,7 +19,7 @@
 */
 
 /* The function in this file performs default actions if self-auditing
-** finds heap corruption.  Don't rely my feeble attempt to handle the
+** finds heap corruption.  Don't rely on my feeble attempt to handle the
 ** case where HMM is being used to implement the malloc and free standard
 ** library functions.  Rewrite the function if necessary to avoid using
 ** I/O and execution termination functions that call malloc or free.
@@ -42,7 +42,7 @@ void HMM_dflt_abort(const char *file, const char *line)
       /* The standard I/O functions called a heap function and caused
       ** an indirect recursive call to this function.  So we'll have
       ** to just exit without printing a message.  */
-      _exit(1);
+      abort();
 
     entered = 1;
 
@@ -53,5 +53,5 @@ void HMM_dflt_abort(const char *file, const char *line)
     fputs("\n\n", stderr);
     fflush(stderr);
 
-    _exit(1);
+    abort();
   }
