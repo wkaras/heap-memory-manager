@@ -1,6 +1,6 @@
 /* Version: 1.1
 **
-** Copyright (c) 2002-2016 Walter William Karas
+** Copyright (c) 2002-2025 Walter William Karas
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 /* Since this file is included twice, clean up all defines.
 */
 #undef U
+#undef MANY_BLOCKS
+#undef MANY_BLOCKS_STOP
 #undef sz_bau
 #undef sz_aau
 #undef DIV_ROUND_UP
@@ -35,7 +37,6 @@
 #undef MIN_BLOCK_AAUS
 #undef MIN_BLOCK_AAUS
 #undef MIN_BLOCK_PYLD_AAUS
-#undef MANY_BLOCKS
 #undef chunk
 #undef chunk2
 #undef d
@@ -61,10 +62,9 @@ char chunk2[HMM_BLOCK_ALIGN_UNIT * 11000][HMM_ADDR_ALIGN_UNIT];
 
 U(descriptor) d;
 
-/* The number of blocks of distinct sizes allocated in the "many
-** blocks" test.  402 is used instead of 400 because 402 % 7 == 3.
-*/
-#define MANY_BLOCKS 402
+#define MANY_BLOCKS ((7 * 7 * 7) + 3)
+
+#define MANY_BLOCKS_STOP (MANY_BLOCKS - 6)
 
 void *(p[MANY_BLOCKS]);
 
@@ -807,14 +807,11 @@ void U(many_blocks)(void)
 	  }
       }
 
-    printf("Freeing some blocks\n");
-
     /* Now I'm going to use the fact that 7 is a generator of the ring
     ** of integers mod MANY_BLOCKS.  Since MANY_BLOCKS mod 7 == 3, the
     ** generating loop will not free adjacent blocks the second time
-    ** through, the way it would if MANY_BLOCKS mod 7 == 1.  This
-    ** keeps blocks from coalaescing and increases the size of the free
-    ** collection.
+    ** through (the way it would if MANY_BLOCKS mod 7 == 1).  This
+    ** keeps blocks from coalaescing.
     */
 
     i = 0;
@@ -826,7 +823,7 @@ void U(many_blocks)(void)
 
 	U(to_heap)(p[i]);
       }
-    while (i != 194);
+    while (i != MANY_BLOCKS_STOP);
 
     printf("Allocating blocks again\n");
 
@@ -840,7 +837,9 @@ void U(many_blocks)(void)
 	if ((p[i] = U(from_heap)((i / 4) * HMM_BLOCK_ALIGN_UNIT)) == 0)
 	  WRONG
       }
-    while (i != 194);
+    while (i != MANY_BLOCKS_STOP);
+
+    printf("largest=%u\n", (unsigned) U(largest_available)(&d));
 
     printf("Freeing all blocks\n");
 
@@ -859,18 +858,18 @@ void U(many_blocks)(void)
 
     printf("largest=%u\n", (unsigned) U(largest_available)(&d));
 
-    if (U(largest_available)(&d) < 10500)
+    if (U(largest_available)(&d) < (10500 * HMM_BLOCK_ALIGN_UNIT)) 
       WRONG
 
-    if (U(from_heap)(10500) == 0)
+    if (U(from_heap)(10500 * HMM_BLOCK_ALIGN_UNIT) == 0)
       WRONG
 
     printf("largest=%u\n", (unsigned) U(largest_available)(&d));
 
-    if (U(largest_available)(&d) < 10500)
+    if (U(largest_available)(&d) < (10500 * HMM_BLOCK_ALIGN_UNIT))
       WRONG
 
-    if (U(from_heap)(10500) == 0)
+    if (U(from_heap)(10500 * HMM_BLOCK_ALIGN_UNIT) == 0)
       WRONG
   }
 
